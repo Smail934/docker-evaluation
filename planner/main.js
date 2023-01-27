@@ -13,8 +13,8 @@ const generateTasks = (i) =>
   new Array(i).fill(1).map((_) => ({ type: taskType(), args: args() }))
 
 let workers = [
-  { url: 'http://worker0:8080', id: '1' },
-  { url : 'http://worker1:8081', id: '2'}
+  { url: 'http://worker0:8080', id: '1',mult:'true'},
+  { url : 'http://worker1:8081', id: '2', add:'false'}
 ]
 
 const app = express()
@@ -42,9 +42,22 @@ let taskToDo = nbTasks
 const wait = (mili) =>
   new Promise((resolve, reject) => setTimeout(resolve, mili))
 
-const sendTask = async (worker, task) => {
-  console.log(`=> ${worker.url}/${task.type}`, task)
-  workers = workers.filter((w) => w.id !== worker.id)
+const sendTask = async (task) => {
+  // console.log(`=> ${worker.url}/${task.type}`, task)
+  let worker = null;
+  if (task.type === 'mult') {
+    worker = workers.find((w) => w.mult === true);
+  } else if (task.type === 'add') {
+    worker = workers.find((w) => w.add === true);
+  }
+  if (!worker) {
+    //console.error(`No worker available for task type ${task.type}`);
+    tasks = [...tasks, task];
+    return;
+  }
+  console.log(`=> ${worker.url}/${task.type}`, task);
+  workers = workers.filter((w) => w.id !== worker.id);
+
   tasks = tasks.filter((t) => t !== task)
   const request = fetch(`${worker.url}/${task.type}`, {
     method: 'POST',
@@ -77,7 +90,7 @@ const main = async () => {
   while (taskToDo > 0) {
     await wait(100)
     if (workers.length === 0 || tasks.length === 0) continue
-    sendTask(workers[0], tasks[0])
+    sendTask( tasks[0])
   }
   console.log('end of tasks')
   server.close()

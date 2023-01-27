@@ -9,8 +9,8 @@ const PLANNER =
     ? process.env.PLANNER
     : 'http://localhost:3000'
 const MULT =
-  process.env.MULT !== undefined ? new Boolean(process.env.MULT) : true
-const ADD = process.env.ADD !== undefined ? new Boolean(process.env.ADD) : true
+  process.env.MULT !== undefined ? JSON.parse(process.env.MULT) : true
+const ADD = process.env.ADD !== undefined ? JSON.parse(process.env.ADD) : true
 const app = express()
 const port = process.env.PORT || 8080
 const ADDRESS =
@@ -48,6 +48,7 @@ if (MULT)
     const { a, b } = req.body
     task = { a, b }
     console.log('mult', req.body)
+    console.log('PARTIE MULT : add = ' +add +', mult = '+mult)
     const duration = randInt(3000, 12000)
     setTimeout(() => {
       mult = false
@@ -62,10 +63,12 @@ if (ADD)
       res.status(403).send('Already working')
       return
     }
+    
     add = true
     const { a, b } = req.body
     task = { a, b }
     console.log('add', req.body)
+    console.log('PARTIE MULT : add = ' +add +', mult = '+mult)
     const duration = randInt(3000, 7000)
     setTimeout(() => {
       add = false
